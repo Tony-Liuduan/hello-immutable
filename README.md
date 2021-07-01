@@ -38,8 +38,10 @@ function touchAndLog(touchFn) {
 * List
 * Set
 * Map
+  * 相当于被 Object.freeze 的 Map (浅的)
 * Record
   * 一个用于生成Record实例的类。类似于JavaScript的Object，但是只接收特定字符串为key，具有默认值
+  * 相当于被 Object.freeze + Object.seal 的 Map (浅的)
 * Seq
   * 把其他 collection 变成懒执行
 
@@ -228,9 +230,16 @@ Immutable 中的 Map 和 List 虽对应原生 Object 和 Array，但操作非常
 * 使用 Immutable.fromJS 而不是 Immutable.Map 或 Immutable.List 来创建对象，这样可以避免 Immutable 和原生对象间的混用
 * toJS() 函数少用，很贵
 
+## 六.immer 实现不可变原理
+
+* proxy TODO:
+* Object.freeze TODO:
+
 ## 引用
 
 * <https://immutable-js.com/>
 * <https://zhuanlan.zhihu.com/p/163590288>
 * <https://github.com/camsong/blog/issues/3>
 * <https://juejin.cn/post/6844903679644958728>
+* <https://segmentfault.com/a/1190000017270785>
+* <https://github.com/immerjs/immer/blob/master/src/core/proxy.ts>
