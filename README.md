@@ -243,3 +243,5 @@ Immutable 中的 Map 和 List 虽对应原生 Object 和 Array，但操作非常
 * <https://juejin.cn/post/6844903679644958728>
 * <https://segmentfault.com/a/1190000017270785>
 * <https://github.com/immerjs/immer/blob/master/src/core/proxy.ts>
+* <https://juejin.cn/post/6844903684254466062>
+* <https://es6.ruanyifeng.com/#docs/proxy>
