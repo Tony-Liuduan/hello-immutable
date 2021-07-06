@@ -12,10 +12,11 @@
 // };
 
 // const obj1 = produce(obj, draft => {
-// 	console.log(draft);
 // 	draft.a.b.c = 2;
 // });
 
+// console.log(Object.isFrozen(obj1));
+// obj1.a = 3;
 // console.log(obj1.a);
 // console.log(obj1.x === obj.x);
 
@@ -94,20 +95,29 @@ function createProxyProxy(base, parent) {
 }
 
 const DRAFT_STATE = 'immer-state';
+// Object.is Polyfill
 function is(x, y) {
 	// From: https://github.com/facebook/fbjs/blob/c69904a511b900266935168223063dd8772dfc40/packages/fbjs/src/core/shallowEqual.js
+	// https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/is
 	if (x === y) {
+		// 需要判断: +0 !== -0
 		return x !== 0 || 1 / x === 1 / y
 	} else {
+		// 需要判断: NaN !== NaN
 		return x !== x && y !== y
 	}
 }
 
 const objectTraps = {
+	// Proxy.get 示例:
+	// var p = new Proxy(target, {
+	// 		get: function(target, property, receiver) {
+	// 	  }
+	// );
 	get(state, prop) {
 		if (prop === DRAFT_STATE) return state
 
-		const source = latest(state)
+		const source = latest(state);
 		if (!source.hasOwnProperty(prop)) {
 			// non-existing or non-own property...
 			return readPropFromProto(state, source, prop)
@@ -131,13 +141,19 @@ const objectTraps = {
 	has(state, prop) {
 		return prop in latest(state)
 	},
+	// Proxy.set 示例
+	// const p = new Proxy(target, {
+	// 		set: function(target, property, value, receiver) {
+	//  	}
+	// });
 	set(
 		state,
 		prop,
 		value
 	) {
 		const desc = getDescriptorFromProto(latest(state), prop)
-		if (desc?.set) {
+		if (desc && desc.set) {
+			// 这个判断语句执行不到，忽略
 			// special case: if this write is captured by a setter, we have
 			// to trigger it with the correct context
 			desc.set.call(state.draft_, value)
@@ -154,13 +170,17 @@ const objectTraps = {
 				state.assigned_[prop] = false
 				return true
 			}
+			// 判断新值和旧值是否相等
 			if (is(value, current) && (value !== undefined || state.base_.hasOwnProperty(prop)))
 				return true
+			// 若不相等，则浅拷贝一份数据源属性，属性描述符浅拷贝
 			prepareCopy(state)
+			// 脏值检查，向上递归标记对象被修改 modified_ 变为 true
 			markChanged(state)
 		}
 
 		if (
+			// 先忽略掉这个 if 语句中的逻辑，感觉没关键作用
 			state.copy_[prop] === value &&
 			// special case: NaN
 			typeof value !== "number" &&
@@ -169,8 +189,9 @@ const objectTraps = {
 		)
 			return true
 
-		// @ts-ignore
+		// 给拷贝属性赋值
 		state.copy_[prop] = value
+		// 标记修改的属性 在 assigned_ 对象中
 		state.assigned_[prop] = true
 		return true
 	},
@@ -207,10 +228,11 @@ function readPropFromProto(state, source, prop) {
 			? desc.value
 			: // This is a very special case, if the prop is a getter defined by the
 			// prototype, we should invoke it with the draft as context!
-			desc.get?.call(state.draft_)
+			desc.get.call(state.draft_)
 		: undefined
 }
 
+// 在原型链上查找属性描述符，找到截止，找到则返回输定的描述符
 function getDescriptorFromProto(source, prop) {
 	if (!(prop in source)) return undefined
 	let proto = Object.getPrototypeOf(source)
@@ -240,21 +262,24 @@ function prepareCopy(state) {
 function shallowCopy(base) {
 	if (Array.isArray(base)) return Array.prototype.slice.call(base);
 
+	// 获取自身属性描述符对象集合，返回一个 object 集合
 	const descriptors = Object.getOwnPropertyDescriptors(base);
 
 	delete descriptors[DRAFT_STATE];
 
+	// 获取所有自身属性：可枚举 + 不可枚举 + symbol
 	let keys = Reflect.ownKeys(descriptors);
 	for (let i = 0; i < keys.length; i++) {
+		// 1. 将属性的属性描述符改为可改可写，可枚举属性不动
+		// 2. 不可枚举属性也需要被拷贝
+		// 3. 去除 get set 扁平为 value
+		// 这里没有使用 Object.assign，为了解决上面 3 个问题，详见：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
 		const key = keys[i]
 		const desc = descriptors[key]
 		if (desc.writable === false) {
 			desc.writable = true
 			desc.configurable = true
 		}
-		// like object.assign, we will read any _own_, get/set accessors. This helps in dealing
-		// with libraries that trap values, like mobx or vue
-		// unlike object.assign, non-enumerables will be copied as well
 		if (desc.get || desc.set)
 			descriptors[key] = {
 				configurable: true,
@@ -263,15 +288,16 @@ function shallowCopy(base) {
 				value: base[key]
 			}
 	}
+	// 原型上的属性保留原样不动
 	return Object.create(Object.getPrototypeOf(base), descriptors)
 }
 
 function processResult(result, scope) {
 	scope.unfinalizedDrafts_ = scope.drafts_.length;
 
-	const baseDraft = scope.drafts_[0];
+	const baseDraft = scope.drafts_[0]; // baseDraft 是 scope 的代理结果
 
-	result = finalize(scope, baseDraft, []);
+	result = finalize(scope, baseDraft, []); // 冻结代理对象
 
 	revokeScope(scope);
 
@@ -282,7 +308,8 @@ function finalize(rootScope, value, path) {
 	// Don't recurse in tho recursive data structures
 	if (Object.isFrozen(value)) return value;
 
-	const state = value[DRAFT_STATE];
+	const state = value[DRAFT_STATE]; // 直接返回源对象
+
 	// A plain object, might need freezing, might contain drafts
 	if (!state) {
 		Object.keys(value).forEach(key, (key, childValue) =>
@@ -294,6 +321,7 @@ function finalize(rootScope, value, path) {
 	if (state.scope_ !== rootScope) return value
 	// Unmodified draft, return the (frozen) original
 	if (!state.modified_) {
+		// 深冻结源对象，没修过过则直接把冻结后的源对象返回去
 		maybeFreeze(rootScope, state.base_, true)
 		return state.base_
 	}
@@ -311,16 +339,8 @@ function finalize(rootScope, value, path) {
 				finalizeProperty(rootScope, state, result, key, childValue, path)
 		)
 		// everything inside is frozen, we can freeze here
+		// 浅冻结 copy 对象
 		maybeFreeze(rootScope, result, false)
-		// first time finalizing, let's create those patches
-		if (path && rootScope.patches_) {
-			getPlugin("Patches").generatePatches_(
-				state,
-				path,
-				rootScope.patches_,
-				rootScope.inversePatches_
-			)
-		}
 	}
 	return state.copy_
 }
@@ -411,6 +431,10 @@ const myObj = {
 const myObj1 = (new Immer()).produce(myObj, draft => {
 	draft.a = 3;
 });
+
+console.log(Object.isFrozen(myObj1));
+
+myObj1.a = 5;
 
 console.log(myObj1.a);
 console.log(myObj1 === myObj);

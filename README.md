@@ -232,8 +232,8 @@ Immutable 中的 Map 和 List 虽对应原生 Object 和 Array，但操作非常
 
 ## 六.immer 实现不可变原理
 
-* proxy TODO:
-* Object.freeze TODO:
+* proxy
+* Object.freeze
 
 ## 引用
 
