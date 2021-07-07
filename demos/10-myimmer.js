@@ -1,5 +1,3 @@
-const IMMER_PROXY = 'immer-proxy';
-
 const isPlainObject = value => {
     if (value === null || typeof value !== "object") {
         return false
@@ -8,32 +6,23 @@ const isPlainObject = value => {
     return proto === Object.prototype || proto === null
 }
 
-const isProxy = value => !!value && !!value[IMMER_PROXY]
-
 function produce(baseState, thunk) {
     // Maps baseState objects to proxies
-    const proxies = new Map()
+    const proxies = new WeakMap()
     // Maps baseState objects to their copies
-    const copies = new Map()
+    const copies = new WeakMap()
 
     const objectTraps = {
         get(target, prop) {
-            // console.log('get', target, prop);
-            if (prop === IMMER_PROXY) {
-                return target
-            }
             // 若是对象继续代理
             return getOrCreateProxy(getCurrentSource(target)[prop])
         },
         set(target, prop, val) {
-            // console.log('set', target, prop, val);
             const current = getOrCreateProxy(getCurrentSource(target)[prop])
             const newVal = getOrCreateProxy(val)
             if (current !== newVal) {
                 const copy = getOrCreateCopy(target)
-                copy[prop] = isProxy(newVal)
-                    ? newVal[IMMER_PROXY]
-                    : newVal
+                copy[prop] = newVal;
             }
             return true
         },
@@ -46,11 +35,6 @@ function produce(baseState, thunk) {
 
     const getOrCreateProxy = baseState => {
         if (isPlainObject(baseState) || Array.isArray(baseState)) {
-            // avoid double wrapping
-            if (isProxy(baseState)) {
-                return baseState
-            }
-
             if (proxies.has(baseState)) {
                 return proxies.get(baseState)
             }
@@ -111,8 +95,6 @@ function produce(baseState, thunk) {
     thunk(rootProxy)
     // and finalize the modified proxy
     const res = finalize(baseState);
-    // console.log(copies.keys())
-    console.log(copies.entries())
     return res;
 }
 
@@ -183,8 +165,17 @@ const target = produce(state, draftState => {
     })
 });
 
-// console.log(target, state);
+console.log('myimmer test...');
+console.log('===========');
+console.log(target, '\n\n', state);
+console.log('===========');
+console.log(target.person.detailInfo.chldren, '\n\n', state.person.detailInfo.chldren);
+console.log('===========');
 console.log(target.person.basicInfo === state.person.basicInfo);
+console.log('===========');
 console.log(target.person.list === state.person.list);
+console.log('===========');
 console.log(target.person.detailInfo === state.person.detailInfo);
+console.log('===========');
 console.log(target.person === state.person);
+console.log('=========== end');
