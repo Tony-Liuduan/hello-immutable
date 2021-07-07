@@ -1,4 +1,3 @@
-import { isEqual } from "lodash"
 import React, { memo, useEffect, useMemo, useRef, useState } from "react"
 
 interface Item {
@@ -12,12 +11,13 @@ const uuid = (id => () => ++id)(0);
 export function CounterList() {
     const [count, setCount] = useState(0)
     const [name, setName] = useState("")
-    const [items, setItems] = React.useState([] as Item[])
+    const [items, setItems] = useState([] as Item[])
 
     useEffect(() => {
-        setInterval(() => {
-            setCount(x => x + 1)
-        }, 2000)
+        // TODO: 加上下面代码后 可以直接 return items 更新
+        // setInterval(() => {
+        //     setCount(x => x + 1)
+        // }, 5000)
     }, [])
 
     const handleChange = (e: any) => {
@@ -32,10 +32,10 @@ export function CounterList() {
                 done: false,
                 id,
             })
-            // return items; // 这样不会更新子组件，items 地址没变
+            return items; // 这样不会触发当前组件的 render
             // class 的 setState: 不管你传入的是什么state，都会强制刷新当前组件，应为内部使用了 Object.assign() 做了 merge，在 shouldComponentUpdate 对比时永远返回 true
             // hooks 的 setState: 如果前后两次的 state 引用相等，并不会刷新组件
-            return [...items]; // 保证每次都生成新的items，这样才能保证组件的刷新
+            // return [...items]; // 保证每次都生成新的items，这样才能保证组件的刷新
         })
     }
 

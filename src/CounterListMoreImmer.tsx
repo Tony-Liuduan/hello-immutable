@@ -1,6 +1,6 @@
 import { cloneDeep } from "lodash"
 import { List } from 'immutable'
-import React, { memo, useEffect, useMemo, useRef, useState } from "react"
+import React, { memo, useMemo, useRef, useState } from "react"
 
 interface Item {
     id: number;
@@ -15,15 +15,8 @@ interface Item {
 const uuid = (id => () => ++id)(0);
 
 export function CounterListMoreImmer() {
-    const [count, setCount] = useState(0)
     const [name, setName] = useState("")
     const [items, setItems] = React.useState<List<Item>>(List([]))
-
-    useEffect(() => {
-        setInterval(() => {
-            setCount(x => x + 1)
-        }, 2000)
-    }, [])
 
     const handleChange = (e: any) => {
         setName(e.target.value)
@@ -59,8 +52,7 @@ export function CounterListMoreImmer() {
                 value={name}
                 onChange={handleChange}
             ></input>
-
-            <div>counter: {count}</div>
+            <br />
 
             <button onClick={handleAdd}>+</button>
             <button onClick={updateArticleTitle}>update article title</button>

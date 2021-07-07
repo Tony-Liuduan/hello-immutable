@@ -1,5 +1,5 @@
 import { cloneDeep } from "lodash"
-import React, { memo, useEffect, useMemo, useRef, useState } from "react"
+import React, { memo, useMemo, useRef, useState } from "react"
 
 interface Item {
     id: number;
@@ -14,15 +14,8 @@ interface Item {
 const uuid = (id => () => ++id)(0);
 
 export function CounterListMore() {
-    const [count, setCount] = useState(0)
     const [name, setName] = useState("")
     const [items, setItems] = React.useState([] as Item[])
-
-    useEffect(() => {
-        setInterval(() => {
-            setCount(x => x + 1)
-        }, 2000)
-    }, [])
 
     const handleChange = (e: any) => {
         setName(e.target.value)
@@ -41,16 +34,13 @@ export function CounterListMore() {
                     title: 'article-title' + name + articleId,
                 }
             })
-            // return items; // 这样不会更新子组件，items 地址没变
-            // class 的 setState: 不管你传入的是什么state，都会强制刷新当前组件，应为内部使用了 Object.assign() 做了 merge，在 shouldComponentUpdate 对比时永远返回 true
-            // hooks 的 setState: 如果前后两次的 state 引用相等，并不会刷新组件
-            return [...items]; // 保证每次都生成新的items，这样才能保证组件的刷新
+            return [...items];
         })
     }
 
     const updateArticleTitle = () => {
         // Object.assign 实现：
-        /* setItems(items => {
+        setItems(items => {
             if (!items[0]) {
                 return items;
             }
@@ -59,17 +49,17 @@ export function CounterListMore() {
                 { ...items[0] },
                 ...items.slice(1),
             ];
-        }); */
+        });
 
         // 深拷贝实现：
         // 缺陷：
         // 1. 对引用破坏，导致 memo 失效，所有 child 组件全部更新一遍
         // 2. 性能不好
-        setItems(items => {
-            const newItems = cloneDeep(items);
-            newItems[0].article.title = "new article";
-            return newItems;
-        });
+        // setItems(items => {
+        //     const newItems = cloneDeep(items);
+        //     newItems[0].article.title = "new article";
+        //     return newItems;
+        // });
     }
 
     return (
@@ -78,8 +68,7 @@ export function CounterListMore() {
                 value={name}
                 onChange={handleChange}
             ></input>
-
-            <div>counter: {count}</div>
+            <br />
 
             <button onClick={handleAdd}>+</button>
             <button onClick={updateArticleTitle}>update article title</button>

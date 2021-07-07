@@ -6,5 +6,5 @@ import { CounterListMore } from "./CounterListMore";
 import { CounterListMoreImmer } from "./CounterListMoreImmer";
 
 export default function App() {
-    return <CounterListMoreImmer />
+    return <Counter />
 }

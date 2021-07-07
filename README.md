@@ -36,7 +36,6 @@ function touchAndLog(touchFn) {
 
 * Collection: 是构建所有数据结构的基类，不可以直接构建
 * List
-* Set
 * Map
   * 相当于被 Object.freeze 的 Map (浅的)
 * Record
@@ -44,6 +43,7 @@ function touchAndLog(touchFn) {
   * 相当于被 Object.freeze + Object.seal 的 Map (浅的)
 * Seq
   * 把其他 collection 变成懒执行
+* Set
 
 ### 数据切换
 
@@ -232,7 +232,7 @@ Immutable 中的 Map 和 List 虽对应原生 Object 和 Array，但操作非常
 
 ## 六.immer 实现不可变原理
 
-* proxy
+* Proxy 递归代理
 * Object.freeze
 
 ## 引用

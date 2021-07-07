@@ -25,20 +25,19 @@ export function CounterBig() {
         done: false
     };
 
-    // fix render-1:
+    // fix-1
+    // const item = useRef({
+    //     text: name,
+    //     done: false,
+    // }).current;
+
+    // fix-2
     // const item: Item = useMemo(() => {
     //     return {
     //         text: name,
     //         done: false
     //     };
     // }, [name]); 
-   
-
-    // error: 导致 item 值一直不变，永远指向第一次的地址，无法更新
-    // const item = useRef({
-    //     text: name,
-    //     done: false,
-    // }).current;
 
     return (
         <>
@@ -55,12 +54,12 @@ export function CounterBig() {
 }
 
 const ChildMemo = memo(Child,
-    // fix render-2:
-    /* (prev, next) => {
-        // 使用深比较比较对象相等
-        // 虽然这样能达到效果，但是深比较处理比较复杂的对象时仍然存在较大的性能开销甚至挂掉的风险
-        return isEqual(prev, next);
-    } */
+    // fix-0
+    // (prev, next) => {
+    //     // 使用深比较比较对象相等
+    //     // 虽然这样能达到效果，但是深比较处理比较复杂的对象时仍然存在较大的性能开销甚至挂掉的风险
+    //     return isEqual(prev, next);
+    // }
 );
 
 function Child(props: { item: Item }) {
