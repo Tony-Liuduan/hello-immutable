@@ -11,4 +11,6 @@ console.log(list1.size, 2);
 console.log(list2.size, 5);
 console.log(list3.size, 6);
 console.log(list4.size, 13);
-console.log(list4.get(0), 1);
+console.log(list4.get(0)); // 1
+console.log(list4[0]); // undefined
+console.log(list4.set(0, 1000));

@@ -70,7 +70,7 @@ map1 === map2;             // false
 Immutable.is(map1, map2);  // true
 ```
 
-Immutable.is 比较的是两个对象的 hashCode，immutable 内部使用了 Trie 数据结构来存储，只要两个对象的 hashCode 相等，值就是一样的。这样的算法避免了深度遍历比较，性能非常好
+Immutable.is 比较的是两个对象的 hashCode，immutable 内部使用了 Trie（字典树） 数据结构来存储，只要两个对象的 hashCode 相等，值就是一样的。这样的算法避免了深度遍历比较，性能非常好
 
 ### Object.assign 简配immutable
 

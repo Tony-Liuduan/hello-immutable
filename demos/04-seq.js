@@ -10,5 +10,7 @@ const seq = Seq(myObject).map((val, key) => {
 
 
 setTimeout(() => {
-    seq.toObject();
-}, 2000);
+    console.log(seq.get('a'));
+    console.log(seq.get('b'));
+    console.log(seq.get('c'));
+}, 4000);

@@ -7,6 +7,10 @@ const map2 = map1.set('b', 50);
 const map3 = map1.set('b', 2); // 数据不变，即便 set 了，返回的还是原来的数据集合
 const map4 = Map({ a: 1, b: 2, c: 3 });
 
+// 不能 . 取值
+console.log('map1.a', map1.a);
+console.log('map1.get(a)', map1.get('a'));
+
 // 取值
 map1.get('b') + " vs. " + map2.get('b');
 

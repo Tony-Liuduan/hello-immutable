@@ -13,11 +13,12 @@ console.log(myRecordWithoutB.get('b')); // 2
 
 // 3.可以.调用
 console.log(myRecordWithoutB.b); // 2
+// 可以 . get，但不能 . set， 会 error
+// myRecordWithoutB.b = 5;
 
 
 class MyRecord extends Record({ a: 1, b: 2 }) {
     get getAB() {
-        // this.a = 100; throw new Error(error);
         return this.a + this.b;
     }
 }
